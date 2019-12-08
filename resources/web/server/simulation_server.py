@@ -75,7 +75,7 @@ def chmod_python_and_executable_files(directory):
         if os.path.isdir(fullname):
             chmod_python_and_executable_files(fullname)
         if filename.endswith('.py') or not os.path.splitext(filename)[1]:
-            os.chmod(fullname, 0775)
+            os.chmod(fullname, 0o775)
 
 
 class Snapshot:
@@ -211,8 +211,8 @@ class Client:
                 protocol = 'wss:'
             else:
                 protocol = 'ws:'
-            client.client_websocket.write_message('webots:' + protocol + '//'
-                                                  + hostname + ':' + str(port))
+            client.client_websocket.write_message('webots:' + protocol + '//' +
+                                                  hostname + ':' + str(port))
             for line in iter(client.webots_process.stdout.readline, b''):
                 line = line.rstrip()
                 if line == 'pause':
@@ -231,7 +231,7 @@ class Client:
 
     def on_exit(self):
         """Callback issued when Webots quits."""
-        if (self.webots_process):
+        if self.webots_process:
             logging.warning('[%d] Webots [%d] exited' % (id(self), self.webots_process.pid))
             self.webots_process.wait()
             self.webots_process = None
@@ -267,7 +267,7 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
 
     @classmethod
     def next_available_port(cls):
-        """Return a port number available for a new Webots Websocket server."""
+        """Return a port number available for a new Webots WebSocket server."""
         port = config['port'] + 1
         while True:
             found = False
@@ -326,14 +326,16 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
                 if n > 0:
                     host = host[:n]
                 keyFilename = os.path.join(config['keyDir'], host)
-                try:
-                    keyFile = open(keyFilename, "r")
-                except IOError:
-                    logging.error("Unknown host: " + host + " from " + self.request.remote_ip)
-                    client.client_websocket.close()
-                    return
-                client.key = keyFile.readline().rstrip(os.linesep)
-
+                if (os.path.isfile(keyFilename)):
+                    try:
+                        keyFile = open(keyFilename, "r")
+                    except IOError:
+                        logging.error("Unknown host: " + host + " from " + self.request.remote_ip)
+                        client.client_websocket.close()
+                        return
+                    client.key = keyFile.readline().rstrip(os.linesep)
+                else:
+                    logging.warning("No key for: " + host)
                 logging.info('[%d] Setup client %s %s '
                              '(remote ip: %s, streaming_server_port: %s)'
                              % (id(client),
@@ -567,7 +569,6 @@ def main():
     # are described here:
     #
     # port:              local port on which the server is listening (launching webots instances).
-    # publicPort:        external port to which the server can be contacted from.
     # sslKey:            private key for a SSL enabled server.
     # sslCertificate:    certificate for a SSL enabled server.
     # projectsDir:       directory in which projects are located.
@@ -603,8 +604,6 @@ def main():
         config['keyDir'] = expand_path(config['keyDir'])
     if 'port' not in config:
         config['port'] = 2000
-    if 'publicPort' not in config:
-        config['publicPort'] = config['port']
     os.environ['WEBOTS_FIREJAIL_CONTROLLERS'] = '1'
     config['instancesPath'] = tempfile.gettempdir().replace('\\', '/') + '/webots/instances/'
     # create the instances path

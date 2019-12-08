@@ -32,7 +32,7 @@ class TestLists(unittest.TestCase):
                     if itemBuffer and not line.strip():
                         self.items.append({'item': itemBuffer, 'md': md_path})
                         itemBuffer = ''
-                    if re.match(r'```', line):
+                    if re.match(r'\s*```', line):
                         skipUntil = '```'
                         continue
                     elif re.match(r'^\s*- ', line) or re.match(r'^\s*\d+\. ', line):
@@ -64,7 +64,7 @@ class TestLists(unittest.TestCase):
                     continue
                 line = re.sub(TestLists.hyperlinkRE, '', line)  # Remove hyperlinks.
                 line = line.strip()
-                if len(line) == 0:  # If it remains something, then test it.
+                if not line:  # If it remains something, then test it.
                     continue
                 self.assertTrue(
                     line.endswith('.') or line.endswith(':') or line.endswith('!'),

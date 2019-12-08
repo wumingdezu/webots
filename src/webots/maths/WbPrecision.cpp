@@ -52,3 +52,7 @@ QString WbPrecision::doubleToString(double value, Level level) {
       return QString::number(value, 'g', 6);
   }
 }
+
+double WbPrecision::roundValue(double value, Level level) {
+  return doubleToString(value, level).toDouble();
+}

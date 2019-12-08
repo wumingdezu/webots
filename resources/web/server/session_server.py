@@ -178,8 +178,8 @@ def read_url(url, i):
         if simulation_server_loads[i] != 100:
             if u'administrator' in config:
                 send_email("Simulation server not responding", "Hello,\n\n" + config[u'simulationServers'][i] +
-                           " simulation server may be down, as it is not responding to the requests of the session server...\n"
-                           + check_string)
+                           " simulation server may be down, as it is not responding to the requests of the session server" +
+                           "...\n" + check_string)
             else:
                 logging.info(config[u'simulationServers'][i] + " simulation server is not responding (assuming 100% load)")
         simulation_server_loads[i] = 100
@@ -243,7 +243,7 @@ def main():
     # the following config variables read from the config.json file
     # are described here:
     #
-    # port:              local port on which the server is listening (launching webots instances).
+    # port:              local port on which the server is listening.
     # server:            host where this session script is running.
     # sslKey:            private key for a SSL enabled server.
     # sslCertificate:    certificate for a SSL enabled server.

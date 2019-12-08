@@ -249,8 +249,6 @@ void WbSceneTree::setWorld(WbWorld *world) {
 
   // just to know if we are reloading
   mWorldFileName = world->fileName();
-
-  WbNodeOperations::instance()->updateDictionary(true, world->root());
   mTreeView->scrollToSelection();
 }
 
@@ -1442,7 +1440,7 @@ void WbSceneTree::help() {
             }
             break;
           }
-          name = dir.dirName();
+          name = dir.dirName().replace('_', '-');
           if (!dir.cdUp())
             break;
         }
